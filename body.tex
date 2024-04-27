@@ -30,7 +30,7 @@ InfluxDB can handle high data throughput, making it suitable for writing and que
 
 Apache Kafka is a distributed data streaming platform that is designed for high throughput and fault tolerance. Sasquatch uses the Strimzi operator\footnote{\url{https://strimzi.io}} to deploy Apache Kafka on Kubernetes. Kafka is used to capture telemetry data before writing to InfluxDB. For fault tolerance, Kafka replicates data across multiple brokers in the cluster. Each metric or telemetry topic is configured with a replication factor of three and data durability is ensured by requiring acknowledgment from at least two replicas when writing to Kafka.
 
-Figure 1 shows the Sasquatch deployment at USDF. MirrorMaker2 is the component responsible for mirroring the data from the Summit \cite{SQR-050}. The data is then persisted in the Kafka brokers with a retention period of 72h. Kafka Connect is the component responsible for running the connectors which consume data from the Kafka brokers write to InfluxDB.
+Figure 1 shows the Sasquatch deployment at USDF. MirrorMaker2 is the component responsible for mirroring the data from the Summit \cite{SQR-050}. The data is then persisted in the Kafka brokers with a retention period of 72h. Kafka Connect is the component responsible for running the connectors which consume data from the Kafka brokers and write to InfluxDB.
 
 \begin{figure}[h]
     \centering
@@ -44,19 +44,19 @@ Sasquatch implements namespaces to organize and identify different data sources.
 
 \subsection{Sending data to Sasquatch}
 
-Sasquatch uses Avro for the data serialization format and the Confluent Schema Registry (SR)\footnote{\url{https://docs.confluent.io/platform/current/schema-registry/}} to store the Avro schemas and ensure they can evolve safely, whitout breaking the Sasquatch consumers.
+Sasquatch uses Avro for the data serialization format and the Confluent Schema Registry (SR)\footnote{\url{https://docs.confluent.io/platform/current/schema-registry/}} to store the Avro schemas and ensure they can evolve safely, without breaking the Sasquatch consumers.
 
 Applications connecting to Sasquatch can use native Kafka and SR clients to send data to Kafka. For example, the Kafka producer\footnote{\url{https://ts-salkafka.lsst.io}} that consumes data from the OCS uses the \texttt{confluent-kafka-python} client to send data to Kafka and the Confluent SR client to register the Avro schemas. Avro schemas are created from the XML schemas in the OCS code base\footnote{\url{https://ts-xml.lsst.io}}.
 
-Alternatively the REST Proxy\footnote{\url{https://docs.confluent.io/platform/current/kafka-rest/index.html}} provides a REST interface to Kafka, making it easy to produce and consume messages. The LSST Analysis Tools package measure metrics from the LSST Pipelines outputs uses the REST Proxy to send data to Kafka.
+Alternatively the REST Proxy\footnote{\url{https://docs.confluent.io/platform/current/kafka-rest/index.html}} provides a REST interface to Kafka, making it easy to produce and consume messages. The LSST Analysis Tools package that measures metrics from the LSST Pipelines outputs uses the REST Proxy to send data to Kafka.
 
 \subsection{Data visualization, alerting, and analysis}
 
-Enabling users to create their own dashboards and alerts is essential for moniroting and troubleshooting the observatory systems, especially during the current System Integration Testing and Commissioning (SITCOM) phase.
+Enabling users to create their own dashboards and alerts is essential for monitoring and troubleshooting the observatory systems, especially during the current System Integration Testing and Commissioning (SITCOM) phase.
 
 Sasquatch uses Chronograf for data visualization, and Kapacitor for alert management. Dahshboards and alert rules ae defined using InfluxQL, a SQL-like query language with a rich set of functions specific to time series data analysis. Alert notifications are sent to specifc channels on Slack to notify the users about a metric deviation from a predefined threshold or the observatory systems health.
 
-Sasquatch is also integrated with the Rubin Science Platform (RSP) \cite{DMTN-082, DMTN-212}. On the RSP at USDF users have access to both real-time and the hitorical data captured by Sasquatch. This integration enables users to perform data analysis in a JupyterLab environment with Python and leverage tools such as Times Square \cite{SQR-062} for publishing parameterized Jupyter Notebooks.
+Sasquatch is also integrated with the Rubin Science Platform (RSP) \cite{DMTN-082, DMTN-212}. On the RSP at USDF users have access to both real-time and the historical data captured by Sasquatch. This integration enables users to perform data analysis in a JupyterLab environment with Python and leverage tools such as Times Square \cite{SQR-062} for publishing parameterized Jupyter Notebooks.
 
 \section{Sasquatch deployments}
 \label{sec:deploy}
@@ -90,9 +90,9 @@ Finally, we have independent deployments in Tucson, US and at the Base Facility 
 \section{Challenges}
 \label{sec:challenges}
 
-We are collecting metrics from LSST Science Pipelines runs on precursor datasets to characterize the performance of the data processing algorithms since early construction \cite{DMTN-091,2022SPIE12189E..0MG}. At the observatory, we started collecting telemetry data in 2019 from the LSST Auxilary Telescope (AuxTel) and from integration tests with the Main Telescope systems such as M1M3 \cite{SITCOMTN-088}, the Telescope Mount Assembly (TMA) \cite{SITCOMTN-121} and the Secondary Mirror (M2) \cite{SITCOMTN-120}.
+We have been collecting metrics from LSST Science Pipelines runs on precursor datasets to characterize the performance of the data processing algorithms since early construction \cite{DMTN-091,2022SPIE12189E..0MG}. At the observatory, we started collecting telemetry data in 2019 from the LSST Auxilary Telescope (AuxTel) and from integration tests with the Main Telescope systems such as M1M3 \cite{SITCOMTN-088}, the Telescope Mount Assembly (TMA) \cite{SITCOMTN-121} and the Secondary Mirror (M2) \cite{SITCOMTN-120}.
 
-Even before starting survey operations, we have recorded already 20\,TB of metrics and telemetry data in Sasquatch, with data rates peaking at 565\,GB/week \cite{SQR-085}. With the integration of the LSST Camera into the OCS, planned for this year, we expect the data rates to increase even further.
+Even before starting survey operations, we have recorded 20\,TB of metrics and telemetry data in Sasquatch, with data rates peaking at 565\,GB/week \cite{SQR-085}. With the integration of the LSST Camera into the OCS, planned for this year, we expect the data rates to increase even further.
 
 Table 2 shows the projected storage growth for the EFD database. From the data rates observed so far we estimate the size of the database to increase by 30\,TB/year during survey operations. By the end of the 10-year survey, the final data volume is expected to be around 1\,PB.
 
@@ -120,7 +120,7 @@ We use MirrorMaker2 to mirror the data from the Summit to the USDF. With a reten
 
 In addition to mirroring data from the Summit to USDF, we also need to support sending metrics computed at USDF back to the Summit in real-time. This requires running another instance of MirrorMaker2 at the Summit to be able to mirror data in both directions. We are currently working on making this feature more reliable in Sasquatch with respect to managing schemas in both environments.
 
-At the Summit environment, the OCS is adopting Apache Kafka for its middleware implementation \cite{2024SPIE13101.59Ftmp, TSTN-033}, which means that the OCS will record commands, events and telemetry data in Kafka in the first place. That puts Apache Kafka into a central role at the Summit, and in principle, we can use the same Kafka cluster for Sasquatch. This change  would simplify the integration of the OCS and Sasquatch at the Summit. For example, the Kafka producers currently used to send data to Kafka won't be necessary, eliminating the data duplication between the OCS and Sasquatch. However, adopting the same Kafka cluster for both the OCS and Sasquatch also brings new challenges. We must configure the OCS Kafka producers properly to achieve the low latency requirements for commands and events topics while prioritizing data durability for telemetry topics.
+At the Summit environment, the OCS is adopting Apache Kafka for its middleware implementation \cite{2024SPIE13101.59Ftmp, TSTN-033}, which means that the OCS will record commands, events and telemetry data directly into Kafka. That will put Apache Kafka into a central role at the Summit, and in principle, we could use the same Kafka cluster for Sasquatch. This change will simplify the integration of the OCS and Sasquatch at the Summit. For example, the Kafka producers currently used to send data to Kafka won't be necessary, eliminating the data duplication between the OCS and Sasquatch. However, adopting the same Kafka cluster for both the OCS and Sasquatch will also bring new challenges. We must configure the OCS Kafka producers properly to achieve the low latency requirements for commands and events topics while prioritizing data durability for telemetry topics.
 
 Finally, we are working on tools to aggregate telemetry \cite{SQR-058} data and expose these data to users in formats like Apache Parquet and VO TAP (Table Access Protocol)\cite{2019ivoa.spec.0927D} to leverage existing data access mechanisms in the RSP.
 
